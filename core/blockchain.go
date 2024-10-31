@@ -2543,3 +2543,11 @@ func (bc *BlockChain) SetTrieFlushInterval(interval time.Duration) {
 func (bc *BlockChain) GetTrieFlushInterval() time.Duration {
 	return time.Duration(bc.flushInterval.Load())
 }
+
+// CacheConfig returns a reference to [bc.cacheConfig]
+//
+// This is used by [miner] to set prefetch parallelism
+// during block building.
+func (bc *BlockChain) CacheConfig() *CacheConfig {
+	return bc.cacheConfig
+}
