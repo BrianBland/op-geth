@@ -292,11 +292,18 @@ func newSubfetcher(db Database, state common.Hash, owner common.Hash, root commo
 	sf.trie = tr
 	sf.pool = &sync.Pool{
 		New: func() any {
-			return mustCopyTrie(sf.trie)
+			return sf.copyTrie()
 		},
 	}
 	go sf.loop()
 	return sf, nil
+}
+
+func (sf *subfetcher) copyTrie() Trie {
+	sf.lock.Lock()
+	defer sf.lock.Unlock()
+
+	return mustCopyTrie(sf.trie)
 }
 
 // schedule adds a batch of trie keys to the queue to prefetch.
@@ -339,7 +346,8 @@ func (sf *subfetcher) wait() {
 func (sf *subfetcher) peek() Trie {
 	// Block until the subfetcher terminates, then retrieve the trie
 	sf.wait()
-	return sf.trie
+
+	return sf.copyTrie()
 }
 
 // terminate requests the subfetcher to stop accepting new tasks and spin down
